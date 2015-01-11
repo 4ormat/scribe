@@ -42,9 +42,11 @@ define([
     EventEmitter.call(this);
 
     this.el = el;
+    this.teardownFns = [];
     this.commands = {};
 
     this.options = defaults(options || {}, {
+      windowContext: window,
       allowBlockElements: true,
       debug: false,
       undo: { enabled: true },
@@ -147,12 +149,27 @@ define([
     this.use(events());
   }
 
+  Scribe.destroy = function (scribeInstance) {
+    scribeInstance.el.removeEventListener('input', this.transactionCaptureCallback, false);
+    for (var i = 0, j = scribeInstance.teardownFns.length; i < j; i++) {
+      scribeInstance.teardownFns[i]();
+    }
+    for (var prop in scribeInstance) {
+      if (scribeInstance.hasOwnProperty(prop)) {
+        scribeInstance[prop] = null;
+      }
+    }
+  };
+
   Scribe.prototype = Object.create(EventEmitter.prototype);
 
   // For plugins
   // TODO: tap combinator?
   Scribe.prototype.use = function (configurePlugin) {
-    configurePlugin(this);
+    var result = configurePlugin(this);
+    if (isFunction(result)) {
+      this.teardownFns.push(result);
+    }
     return this;
   };
 
@@ -286,6 +303,10 @@ define([
       = this._plainTextFormatterFactory.formatters.push(formatter);
   };
 
+  Scribe.prototype.safariFeatureTest = /constructor/i.test(window.HTMLElement);
+
+  Scribe.prototype.safariGreaterThan6FeatureTest = !!window.speechSynthesis;
+
   // TODO: abstract
   function FormatterFactory() {
     this.formatters = Immutable.List();
@@ -331,6 +352,8 @@ define([
       return formatter(formattedData);
     }, html);
   };
+
+  window.Scribe = Scribe;
 
   return Scribe;
 
