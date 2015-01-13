@@ -4,6 +4,8 @@ define(function () {
 
   return function () {
     return function (scribe) {
+      var undoCallback;
+
       var undoCommand = new scribe.api.Command('undo');
 
       undoCommand.execute = function () {
@@ -21,13 +23,17 @@ define(function () {
       scribe.commands.undo = undoCommand;
 
       if (scribe.options.undo.enabled) {
-        scribe.el.addEventListener('keydown', function (event) {
+        scribe.el.addEventListener('keydown', undoCallback = function (event) {
           // TODO: use lib to abstract meta/ctrl keys?
           if (! event.shiftKey && (event.metaKey || event.ctrlKey) && event.keyCode === 90) {
             event.preventDefault();
             undoCommand.execute();
           }
         });
+
+        return function() {
+          scribe.el.removeEventListener('keydown', undoCallback);
+        };
       }
     };
   };
