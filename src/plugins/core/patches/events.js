@@ -22,10 +22,12 @@ define([], function () {
       //       we know in advance whether there will be a change though?
       // TODO: share somehow with `InsertList` command
 
+      var lineHeightSanitizerCallback;
+
       var element = scribe.element;
 
       if (scribe.allowsBlockElements()) {
-        scribe.el.addEventListener('keyup', function (event) {
+        scribe.el.addEventListener('keyup', lineHeightSanitizerCallback = function (event) {
           if (event.keyCode === 8 || event.keyCode === 46) { // backspace or delete
 
             var selection = new scribe.api.Selection();
@@ -85,6 +87,12 @@ define([], function () {
             }
           }
         });
+
+        return function () { //teardown function
+          if (scribe.allowsBlockElements()) {
+            scribe.el.removeEventListener('keyup', lineHeightSanitizerCallback);
+          }
+        };
       }
     };
   };
