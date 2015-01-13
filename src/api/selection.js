@@ -10,7 +10,7 @@ function (elementHelper) {
      * Wrapper for object holding currently selected text.
      */
     function Selection() {
-      var rootDoc = document;
+      var rootDoc = scribe.options.windowContext.document;
 
       // find the parent document or document fragment
       var currentElement = scribe.el.parentNode;
@@ -220,7 +220,7 @@ function (elementHelper) {
         return;
       }
 
-      var newRange = document.createRange();
+      var newRange = scribe.options.windowContext.document.createRange();
 
       newRange.setStartBefore(markers[0]);
       if (markers.length >= 2) {
