@@ -16,14 +16,14 @@ define(function () {
          */
         // using range.collapsed vs selection.isCollapsed - https://code.google.com/p/chromium/issues/detail?id=447523
         if (selection.range.collapsed) {
-          var aElement = document.createElement('a');
+          var aElement = scribe.options.windowContext.document.createElement('a');
           aElement.setAttribute('href', value);
           aElement.textContent = value;
 
           selection.range.insertNode(aElement);
 
           // Select the created link
-          var newRange = document.createRange();
+          var newRange = scribe.options.windowContext.document.createRange();
           newRange.setStartBefore(aElement);
           newRange.setEndAfter(aElement);
 

@@ -3,8 +3,8 @@ define(function () {
   'use strict';
 
   // TODO: abstract
-  function hasContent(rootNode) {
-    var treeWalker = document.createTreeWalker(rootNode, NodeFilter.SHOW_ALL, null, false);
+  function hasContent(scribe, rootNode) {
+    var treeWalker = scribe.options.windowContext.document.createTreeWalker(rootNode, NodeFilter.SHOW_ALL, null, false);
 
     while (treeWalker.nextNode()) {
       if (treeWalker.currentNode) {
@@ -51,7 +51,7 @@ define(function () {
                 scribe.el.removeChild(scribe.el.lastChild);
               }
 
-              var brNode = document.createElement('br');
+              var brNode = scribe.options.windowContext.document.createElement('br');
 
               range.insertNode(brNode);
               // After inserting the BR into the range is no longer collapsed, so
@@ -88,8 +88,8 @@ define(function () {
 
               // If there is not already a right hand side content we need to
               // insert a bogus BR element.
-              if (! hasContent(contentToEndFragment)) {
-                var bogusBrNode = document.createElement('br');
+              if (! hasContent(scribe, contentToEndFragment)) {
+                var bogusBrNode = scribe.options.windowContext.document.createElement('br');
                 range.insertNode(bogusBrNode);
               }
 

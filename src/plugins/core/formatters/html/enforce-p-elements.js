@@ -95,7 +95,7 @@ define([
         // `<ul>1</ul>` to <ul><li>2</li></ul>`. See skipped tests.
         // TODO: This should probably be a part of HTML Janitor, or some other
         // formatter.
-        var bin = document.createElement('div');
+        var bin = scribe.options.windowContext.document.createElement('div');
         bin.innerHTML = html;
 
         wrapChildNodes(scribe, bin);

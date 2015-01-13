@@ -79,7 +79,7 @@ define([
     return function (scribe) {
 
       scribe.registerHTMLFormatter('normalize', function (html) {
-        var bin = document.createElement('div');
+        var bin = scribe.options.windowContext.document.createElement('div');
         bin.innerHTML = html;
 
         traverse(scribe.element, bin);

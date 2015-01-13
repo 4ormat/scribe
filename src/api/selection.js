@@ -243,7 +243,7 @@ function (elementHelper) {
       // return true if nested inline tags ultimately just contain <br> or ""
       function isEmptyInlineElement(node) {
 
-        var treeWalker = document.createTreeWalker(node, NodeFilter.SHOW_ELEMENT, null, false);
+        var treeWalker = scribe.options.windowContext.document.createTreeWalker(node, NodeFilter.SHOW_ELEMENT, null, false);
 
         var currentNode = treeWalker.root;
 
