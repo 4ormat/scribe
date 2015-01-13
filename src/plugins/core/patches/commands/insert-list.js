@@ -109,6 +109,21 @@ define([], function () {
         }.bind(this));
       };
 
+      // format.com implementation: Prevent lists from being inserted in selections
+      // contained by heading tags
+      InsertListCommandPatch.prototype.queryEnabled = function() {
+        var selection = new scribe.api.Selection();
+        var containsHeadingNode = $(selection.range.cloneContents())
+        .children()
+        .filter(function (i, e) { return e.nodeName.match(/^H\d$/); }).length > 0;
+        var containedInHeadingNode = selection.getContaining(function (node) {
+          return !!node.nodeName.match(/^H\d$/);
+        });
+
+        return scribe.api.CommandPatch.prototype.queryEnabled.apply(this, arguments) &&
+          scribe.allowsBlockElements() && ! containedInHeadingNode && ! containsHeadingNode;
+      };
+
       scribe.commandPatches.insertOrderedList = new InsertListCommandPatch('insertOrderedList');
       scribe.commandPatches.insertUnorderedList = new InsertListCommandPatch('insertUnorderedList');
     };
