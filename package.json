@@ -22,6 +22,7 @@
     "plumber-requirejs": "~0.3.0",
     "plumber-uglifyjs": "~0.3.0",
     "plumber-write": "~0.3.0",
+    "plumber-rename": "~0.3.0",
     "q": "~1.0.0",
     "request": "~2.33.0",
     "scribe-test-harness": "~0.0.17",
@@ -29,7 +30,8 @@
     "sinon": "^1.12.2"
   },
   "scripts": {
-    "test": "./run-tests.sh"
+    "test": "./run-tests.sh",
+    "buildFormat": "./node_modules/.bin/plumber format"
   },
   "repository": {
     "type": "git",
