@@ -27,7 +27,9 @@ define(function () {
        * https://dvcs.w3.org/hg/editing/raw-file/tip/editing.html#the-insertlinebreak-command
        * As per: http://jsbin.com/IQUraXA/1/edit?html,js,output
        */
-      scribe.el.addEventListener('keydown', function (event) {
+      var inlineModeEnforcerCallback;
+
+      scribe.el.addEventListener('keydown', inlineModeEnforcerCallback = function (event) {
         if (event.keyCode === 13) { // enter
           var selection = new scribe.api.Selection();
           var range = selection.range;
@@ -109,6 +111,10 @@ define(function () {
         // TODO: hide when the user calls `getHTML`?
         scribe.setContent('');
       }
+
+      return function () { // teardown function
+        scribe.el.removeEventListener('keydown', inlineModeEnforcerCallback);
+      };
     };
   };
 });
