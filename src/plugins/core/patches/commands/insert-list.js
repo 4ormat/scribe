@@ -117,7 +117,7 @@ define([], function () {
         .children()
         .filter(function (i, e) { return e.nodeName.match(/^H\d$/); }).length > 0;
         var containedInHeadingNode = selection.getContaining(function (node) {
-          return !!node.nodeName.match(/^H\d$/);
+          return (/^(H[1-6])$/).test(node.nodeName);
         });
 
         return scribe.api.CommandPatch.prototype.queryEnabled.apply(this, arguments) &&
