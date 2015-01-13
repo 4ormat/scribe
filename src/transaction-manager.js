@@ -21,7 +21,7 @@ define(['lodash-amd/modern/objects/assign'], function (assign) {
         }
       },
 
-      run: function (transaction) {
+      _run: function (transaction) {
         this.start();
         // If there is an error, don't prevent the transaction from ending.
         try {
@@ -30,6 +30,16 @@ define(['lodash-amd/modern/objects/assign'], function (assign) {
           }
         } finally {
           this.end();
+        }
+      },
+
+      run: function (transaction) {
+        if (scribe.safariFeatureTest && !scribe.safariGreaterThan6FeatureTest) {
+          setTimeout(function () {
+            this._run(transaction);
+          }.bind(this), 0)
+        } else {
+          this._run(transaction);
         }
       }
     });
