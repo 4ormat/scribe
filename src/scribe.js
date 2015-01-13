@@ -1,5 +1,6 @@
 define([
   'lodash-amd/modern/objects/defaults',
+  'lodash-amd/modern/objects/isFunction',
   './plugins/core/commands',
   './plugins/core/events',
   './plugins/core/formatters/html/replace-nbsp-chars',
@@ -18,6 +19,7 @@ define([
   'immutable/dist/immutable'
 ], function (
   defaults,
+  isFunction,
   commands,
   events,
   replaceNbspCharsFormatter,
@@ -306,6 +308,10 @@ define([
   Scribe.prototype.safariFeatureTest = /constructor/i.test(window.HTMLElement);
 
   Scribe.prototype.safariGreaterThan6FeatureTest = !!window.speechSynthesis;
+
+  Scribe.prototype.format = function () {
+    this.setHTML(this._htmlFormatterFactory.format(this.getHTML()));
+  };
 
   // TODO: abstract
   function FormatterFactory() {
