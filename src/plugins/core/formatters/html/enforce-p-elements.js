@@ -53,7 +53,7 @@ define([
     });
 
     consecutiveInlineElementsAndTextNodes.forEach(function (nodes) {
-      var pElement = document.createElement('p');
+      var pElement = scribe.options.windowContext.document.createElement('p');
       nodes[0].parentNode.insertBefore(pElement, nodes[0]);
       nodes.forEach(function (node) {
         pElement.appendChild(node);
@@ -65,7 +65,7 @@ define([
 
   // Traverse the tree, wrapping child nodes as we go.
   function traverse(scribe, parentNode) {
-    var treeWalker = document.createTreeWalker(parentNode, NodeFilter.SHOW_ELEMENT, null, false);
+    var treeWalker = scribe.options.windowContext.document.createTreeWalker(parentNode, NodeFilter.SHOW_ELEMENT, null, false);
     var node = treeWalker.firstChild();
 
     // FIXME: does this recurse down?
