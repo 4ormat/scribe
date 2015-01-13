@@ -353,8 +353,6 @@ define([
     }, html);
   };
 
-  window.Scribe = Scribe;
-
   return Scribe;
 
 });
