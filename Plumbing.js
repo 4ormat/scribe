@@ -57,14 +57,16 @@ module.exports = function (pipelines) {
     },
     include: ['scribe'],
     wrap: {
-      start: "(function (root, factory) {\n" +
+      start:
+      "(function (root, factory) {\n" +
       "  if (typeof define === 'function' && define.amd) {\n" +
       "    define([], factory);\n" +
       "  } else {\n" +
       "    root.Scribe = factory();\n" +
       "  }\n" +
       "}(this, function () {\n\n",
-      end: "return require('scribe');\n" +
+      end:
+      "return require('scribe');\n" +
       "}));"
     }
   });
