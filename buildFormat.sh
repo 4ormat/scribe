@@ -30,7 +30,10 @@ fi
 rm ./src/almond.js
 
 # Copy the built file to the local format repo, if possible
-if [ -d ../format ]; then
+for f in ../**/.git/config; do
+  grep --silent 4ormat/4ormat.git $f && DIR=$f && break;
+done
+if [ -n $DIR ]; then
   cp -v ./build/format/scribe.js ../format/app/assets/javascripts/application/shared/scribe.js
   if [ "$?" != "0" ]; then
     echo "Couldn't copy the scribe build to your local copy of the format repo."
