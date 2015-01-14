@@ -49,8 +49,6 @@ module.exports = function (pipelines) {
   // scribe.js. This is the file that we use in the format repo:
   // http://bit.ly/1u0iqmP.
   var rename = require('plumber-rename');
-  var operation = require('plumber').operation;
-  var fs = require('fs');
   var umdRequireJS = requireJS({
     preserveLicenseComments: false,
     paths: {
