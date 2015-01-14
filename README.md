@@ -17,7 +17,7 @@ You can join us on IRC at [#scribejs] on freenode, or via the [Google Group](htt
 
 ## Format Build Process
 
-1. Ensure that your local copy of the format repo is a sibling of this repo.
+1. Clone this repo to a directory that is sibling to your copy of the format repo.
 2. `npm install`
 3. `bower install`
 3. `npm run-script formatBuild`
