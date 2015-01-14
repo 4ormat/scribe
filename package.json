@@ -30,7 +30,8 @@
     "sinon": "^1.12.2"
   },
   "scripts": {
-    "test": "./run-tests.sh"
+    "test": "./run-tests.sh",
+    "formatBuild": "./buildFormat.sh"
   },
   "repository": {
     "type": "git",

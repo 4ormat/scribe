@@ -49,13 +49,15 @@ module.exports = function (pipelines) {
   // scribe.js. This is the file that we use in the format repo:
   // http://bit.ly/1u0iqmP.
   var rename = require('plumber-rename');
+  var operation = require('plumber').operation;
+  var fs = require('fs');
   var umdRequireJS = requireJS({
     preserveLicenseComments: false,
     paths: {
-      'lodash-amd': '../../bower_components/lodash-amd',
-      'immutable': '../../bower_components/immutable'
+      'lodash-amd': '../bower_components/lodash-amd',
+      'immutable': '../bower_components/immutable'
     },
-    include: ['../../src/scribe'],
+    include: ['scribe'],
     wrap: {
       start: "(function (root, factory) {\n" +
       "  if (typeof define === 'function' && define.amd) {\n" +
@@ -69,8 +71,9 @@ module.exports = function (pipelines) {
     }
   });
   var toFormatBuildDir = write('./build/format');
+  var sources = glob.within('src');
   pipelines['format'] = [
-    glob('./node_modules/almond/almond.js'),
+    sources('almond.js'),
     rename('scribe'),
     umdRequireJS,
     toFormatBuildDir.omitSourceMap
