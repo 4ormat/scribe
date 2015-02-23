@@ -30,15 +30,35 @@ fi
 rm ./src/almond.js
 
 # Copy the built file to the local format repo, if possible
-for f in ../**/.git/config; do
-  grep --silent 4ormat/4ormat.git $f && DIR=$f && break;
-done
-if [ -n $DIR ]; then
-  cp -v ./build/format/scribe.js ../format/app/assets/javascripts/application/shared/scribe.js
-  if [ "$?" != "0" ]; then
-    echo "Couldn't copy the scribe build to your local copy of the format repo."
+function copy_to_local_repo () {
+  local_repo=/app/assets/javascripts/application/shared/scribe\.js
+  read -p "Path to your local format repo (DEFAULT: ../format):" formatPath
+  if [ -z $formatPath ]; then
+    formatPath=\.\./format
+  fi
+  filePath=$formatPath/app/assets/javascripts/application/shared/scribe\.js
+  echo Copying build to $filePath
+  # for f in ../**/.git/config; do
+  #   grep --silent 4ormat/4ormat.git $f && DIR=$f && break;
+  # done
+  if [ -f $filePath ]; then
+    cp -v ./build/format/scribe.js $filePath
+    if [ "$?" != "0" ]; then
+      echo "Couldn't copy the scribe build to your local copy of the format repo."
+      exit 1
+    fi
+  else
+    echo Couldn\'t find the build target: $filePath
     exit 1
   fi
-fi
+}
+
+echo "Do you want to copy the build to your local format repo?"
+select yn in "Yes" "No"; do
+    case $yn in
+        Yes ) copy_to_local_repo; break;;
+        No ) exit 0;;
+    esac
+done
 
 exit 0
