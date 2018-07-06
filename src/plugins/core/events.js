@@ -48,7 +48,7 @@ define([
                   selection.range.startContainer === scribe.el;
 
           if (isFirefoxBug) {
-            var focusElement = getFirstDeepestChild(scribe.el.firstChild);
+            var focusElement = firstDeepestChild(scribe.el);
 
             var range = selection.range;
 
@@ -60,7 +60,11 @@ define([
           }
         }
 
-        function getFirstDeepestChild(node) {
+        function firstDeepestChild(node) {
+          if(!node.hasChildNodes()) {
+            return node;
+          }
+
           var treeWalker = scribe.options.windowContext.document.createTreeWalker(node, NodeFilter.SHOW_ALL, null, false);
           var previousNode = treeWalker.currentNode;
           if (treeWalker.firstChild()) {
@@ -69,7 +73,7 @@ define([
             if (treeWalker.currentNode.nodeName === 'BR') {
               return previousNode;
             } else {
-              return getFirstDeepestChild(treeWalker.currentNode);
+              return firstDeepestChild(treeWalker.currentNode);
             }
           } else {
             return treeWalker.currentNode;
