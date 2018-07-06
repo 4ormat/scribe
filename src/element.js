@@ -7,6 +7,7 @@ define(['lodash-amd/modern/collections/contains'], function (contains) {
                            'H2', 'H3', 'H4', 'H5', 'H6', 'HEADER', 'HGROUP', 'HR', 'LI',
                            'NOSCRIPT', 'OL', 'OUTPUT', 'P', 'PRE', 'SECTION', 'TABLE', 'TD',
                            'TH', 'TFOOT', 'UL', 'VIDEO'];
+  var nonWhitespaceRegEx = /\S+/;
   function isBlockElement(node) {
     return contains(blockElementNames, node.nodeName);
   }
@@ -26,11 +27,16 @@ define(['lodash-amd/modern/collections/contains'], function (contains) {
     node.removeChild(childNode);
   }
 
+  function isWhiteSpaceTextNode(node) {
+    return (node.nodeType === Node.TEXT_NODE && nonWhitespaceRegEx.test(node.textContent) === false);
+  }
+
   return {
     isBlockElement: isBlockElement,
     isSelectionMarkerNode: isSelectionMarkerNode,
     isCaretPositionNode: isCaretPositionNode,
-    unwrap: unwrap
+    unwrap: unwrap,
+    isWhiteSpaceTextNode: isWhiteSpaceTextNode
   };
 
 });

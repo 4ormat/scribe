@@ -15,8 +15,12 @@ define(function () {
         var headingNode = selection.getContaining(function (node) {
           return (/^(H[1-6])$/).test(node.nodeName);
         });
+        var containsHeadingNode = function (selection) {
+          $contents = $(selection.range.cloneContents()).children()
+          return $contents.is('h1, h2, h3, h4, h5, h6');
+        };
 
-        return scribe.api.CommandPatch.prototype.queryEnabled.apply(this, arguments) && ! headingNode;
+        return scribe.api.CommandPatch.prototype.queryEnabled.apply(this, arguments) && ! headingNode && ! containsHeadingNode(selection);
       };
 
       // TODO: We can't use STRONGs because this would mean we have to

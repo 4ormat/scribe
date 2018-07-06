@@ -14,15 +14,16 @@ define(function () {
          * Firefox does not create a link when selection is collapsed
          * so we create it manually. http://jsbin.com/tutufi/2/edit?js,output
          */
-        if (selection.selection.isCollapsed) {
-          var aElement = document.createElement('a');
+        // using range.collapsed vs selection.isCollapsed - https://code.google.com/p/chromium/issues/detail?id=447523
+        if (selection.range.collapsed) {
+          var aElement = scribe.options.windowContext.document.createElement('a');
           aElement.setAttribute('href', value);
           aElement.textContent = value;
 
           selection.range.insertNode(aElement);
 
           // Select the created link
-          var newRange = document.createRange();
+          var newRange = scribe.options.windowContext.document.createRange();
           newRange.setStartBefore(aElement);
           newRange.setEndAfter(aElement);
 

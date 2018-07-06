@@ -15,6 +15,14 @@ You can join us on IRC at [#scribejs] on freenode, or via the [Google Group](htt
 
 [See an example][example].
 
+## Format Build Process
+
+1. Clone this repo to a directory that is sibling to your copy of the format repo.
+2. Checkout the format branch: `git checkout -t origin format`
+3. `npm install`
+4. `bower install`
+5. `npm run-script formatBuild`
+
 ## Core
 
 At the core of Scribe we have:
@@ -48,6 +56,10 @@ Alternatively, you can [access the distribution files through GitHub releases](h
 <dl>
   <dt><pre>allowBlockElements</pre></dt>
   <dd>Enable/disable block element mode (enabled by default)</dd>
+  <dt><pre>defaultCommandPatches</pre></dt>
+  <dd>Defines which command patches should be loaded by default</dd>
+  <dt><pre>undo: { enabled: false }</pre></dt>
+  <dd>Enable/disable Scribe's custom undo manager</dd>
 </dl>
 
 ## Usage Example
@@ -183,6 +195,15 @@ this behaviour Scribe needs to manipulate the DOM once again.
 
 The undo stack breaks whenever DOM manipulation is used instead of the native
 command API, therefore we have to use our own.
+
+Scribe's undo manager can be turned off by configuration eg:
+``` js
+var scribe = new Scribe(scribeElement, {
+  undo: {
+    enabled: false
+  }
+})
+```
 
 [browser inconsistencies]: https://github.com/guardian/scribe/blob/master/BROWSERINCONSISTENCIES.md
 [Executing Commands]: https://developer.mozilla.org/en-US/docs/Rich-Text_Editing_in_Mozilla#Executing_Commands

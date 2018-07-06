@@ -10,6 +10,12 @@ define([
 
   return function () {
     return function (scribe) {
+      var placeCaretOnFocus,
+          formattingCallback,
+          headingNavigationCallback,
+          listItemNodeNavCallback,
+          handlePaste;
+
       /**
        * Push the first history item when the editor is focused.
        */
@@ -32,7 +38,7 @@ define([
        *
        * We detect when this occurs and fix it by placing the caret ourselves.
        */
-      scribe.el.addEventListener('focus', function placeCaretOnFocus() {
+      scribe.el.addEventListener('focus', placeCaretOnFocus = function () {
         var selection = new scribe.api.Selection();
         // In Chrome, the range is not created on or before this event loop.
         // It doesn’t matter because this is a fix for Firefox.
@@ -42,7 +48,7 @@ define([
                   selection.range.startContainer === scribe.el;
 
           if (isFirefoxBug) {
-            var focusElement = getFirstDeepestChild(scribe.el.firstChild);
+            var focusElement = firstDeepestChild(scribe.el);
 
             var range = selection.range;
 
@@ -54,8 +60,12 @@ define([
           }
         }
 
-        function getFirstDeepestChild(node) {
-          var treeWalker = document.createTreeWalker(node);
+        function firstDeepestChild(node) {
+          if(!node.hasChildNodes()) {
+            return node;
+          }
+
+          var treeWalker = scribe.options.windowContext.document.createTreeWalker(node, NodeFilter.SHOW_ALL, null, false);
           var previousNode = treeWalker.currentNode;
           if (treeWalker.firstChild()) {
             // TODO: build list of non-empty elements (used elsewhere)
@@ -63,7 +73,7 @@ define([
             if (treeWalker.currentNode.nodeName === 'BR') {
               return previousNode;
             } else {
-              return getFirstDeepestChild(treeWalker.currentNode);
+              return firstDeepestChild(treeWalker.currentNode);
             }
           } else {
             return treeWalker.currentNode;
@@ -92,9 +102,11 @@ define([
           // `scribe.setContent`), we do not want to push to the history. (This
           // happens on the first `focus` event).
           if (isEditorActive) {
-            // Discard the last history item, as we're going to be adding
-            // a new clean history item next.
-            scribe.undoManager.undo();
+            if (scribe.undoManager) {
+              // Discard the last history item, as we're going to be adding
+              // a new clean history item next.
+              scribe.undoManager.undo();
+            }
 
             // Pass content through formatters, place caret back
             scribe.transactionManager.run(runFormatters);
@@ -107,7 +119,7 @@ define([
         delete scribe._skipFormatters;
       }.bind(scribe);
 
-      observeDomChanges(scribe.el, applyFormatters);
+      formattingCallback = observeDomChanges(scribe.el, applyFormatters);
 
       // TODO: disconnect on tear down:
       // observer.disconnect();
@@ -117,7 +129,7 @@ define([
        * keyboard navigation inside a heading to ensure a P element is created.
        */
       if (scribe.allowsBlockElements()) {
-        scribe.el.addEventListener('keydown', function (event) {
+        scribe.el.addEventListener('keydown', headingNavigationCallback = function (event) {
           if (event.keyCode === 13) { // enter
 
             var selection = new scribe.api.Selection();
@@ -144,8 +156,8 @@ define([
                 scribe.transactionManager.run(function () {
                   // Default P
                   // TODO: Abstract somewhere
-                  var pNode = document.createElement('p');
-                  var brNode = document.createElement('br');
+                  var pNode = scribe.options.windowContext.document.createElement('p');
+                  var brNode = scribe.options.windowContext.document.createElement('br');
                   pNode.appendChild(brNode);
 
                   headingNode.parentNode.insertBefore(pNode, headingNode.nextElementSibling);
@@ -168,7 +180,7 @@ define([
        * keyboard navigation inside list item nodes.
        */
       if (scribe.allowsBlockElements()) {
-        scribe.el.addEventListener('keydown', function (event) {
+        scribe.el.addEventListener('keydown', listItemNodeNavCallback = function (event) {
           if (event.keyCode === 13 || event.keyCode === 8) { // enter || backspace
 
             var selection = new scribe.api.Selection();
@@ -209,7 +221,7 @@ define([
        * I also don't like how it has the authority to perform `event.preventDefault`.
        */
 
-      scribe.el.addEventListener('paste', function handlePaste(event) {
+      scribe.el.addEventListener('paste', handlePaste = function (event) {
         /**
          * Browsers without the Clipboard API (specifically `ClipboardEvent.clipboardData`)
          * will execute the second branch here.
@@ -247,8 +259,8 @@ define([
           // Store the caret position
           selection.placeMarkers();
 
-          var bin = document.createElement('div');
-          document.body.appendChild(bin);
+          var bin = scribe.options.windowContext.document.createElement('div');
+          scribe.options.windowContext.document.body.appendChild(bin);
           bin.setAttribute('contenteditable', true);
           bin.focus();
 
@@ -270,6 +282,16 @@ define([
         }
       });
 
+      return function () { // teardown function
+        formattingCallback.disconnect();
+        scribe.el.removeEventListener('focus', pushHistoryOnFocus);
+        scribe.el.removeEventListener('focus', placeCaretOnFocus);
+        scribe.el.removeEventListener('paste', handlePaste);
+        if (scribe.allowsBlockElements()) {
+          scribe.el.removeEventListener('keydown', headingNavigationCallback);
+          scribe.el.removeEventListener('keydown', listItemNodeNavCallback);
+        }
+      };
     };
   };
 });

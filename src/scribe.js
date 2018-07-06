@@ -1,5 +1,6 @@
 define([
   'lodash-amd/modern/objects/defaults',
+  'lodash-amd/modern/objects/isFunction',
   './plugins/core/commands',
   './plugins/core/events',
   './plugins/core/formatters/html/replace-nbsp-chars',
@@ -18,6 +19,7 @@ define([
   'immutable/dist/immutable'
 ], function (
   defaults,
+  isFunction,
   commands,
   events,
   replaceNbspCharsFormatter,
@@ -42,11 +44,24 @@ define([
     EventEmitter.call(this);
 
     this.el = el;
+    this.teardownFns = [];
     this.commands = {};
+
     this.options = defaults(options || {}, {
+      windowContext: window,
       allowBlockElements: true,
-      debug: false
+      debug: false,
+      undo: { enabled: true },
+      defaultCommandPatches: [
+        'bold',
+        'indent',
+        'insertHTML',
+        'insertList',
+        'outdent',
+        'createLink'
+      ]
     });
+
     this.commandPatches = {};
     this._plainTextFormatterFactory = new FormatterFactory();
     this._htmlFormatterFactory = new HTMLFormatterFactory();
@@ -61,8 +76,12 @@ define([
     var TransactionManager = buildTransactionManager(this);
     this.transactionManager = new TransactionManager();
 
-    var UndoManager = buildUndoManager(this);
-    this.undoManager = new UndoManager();
+    //added for explicit checking later eg if (scribe.undoManager) { ... }
+    this.undoManager = false;
+    if (this.options.undo.enabled) {
+      var UndoManager = buildUndoManager(this);
+      this.undoManager = new UndoManager();
+    }
 
     this.el.setAttribute('contenteditable', true);
 
@@ -95,33 +114,35 @@ define([
     }
 
     // Formatters
-    this.use(escapeHtmlCharactersFormatter());
-    this.use(replaceNbspCharsFormatter());
+    var defaultFormatters = Immutable.List.of(
+      escapeHtmlCharactersFormatter,
+      replaceNbspCharsFormatter
+    );
 
 
     // Patches
 
-    var mandatoryPatches = [
-      patches.commands.bold,
-      patches.commands.indent,
-      patches.commands.insertHTML,
-      patches.commands.insertList,
-      patches.commands.outdent,
-      patches.commands.createLink,
+    var defaultPatches = Immutable.List.of(
       patches.events
-    ];
+    );
 
-    var mandatoryCommands = [
-      commands.indent,
-      commands.insertList,
-      commands.outdent,
-      commands.redo,
-      commands.subscript,
-      commands.superscript,
-      commands.undo,
-    ];
+    var defaultCommandPatches = Immutable.List(this.options.defaultCommandPatches).map(function(patch) { return patches.commands[patch]; });
 
-    var allPlugins = [].concat(mandatoryPatches, mandatoryCommands);
+    var defaultCommands = Immutable.List.of(
+      'indent',
+      'insertList',
+      'outdent',
+      'redo',
+      'subscript',
+      'superscript',
+      'undo'
+    ).map(function(command) { return commands[command]; });
+
+    var allPlugins = Immutable.List().concat(
+      defaultFormatters,
+      defaultPatches,
+      defaultCommandPatches,
+      defaultCommands);
 
     allPlugins.forEach(function(plugin) {
       this.use(plugin());
@@ -130,12 +151,27 @@ define([
     this.use(events());
   }
 
+  Scribe.destroy = function (scribeInstance) {
+    scribeInstance.el.removeEventListener('input', this.transactionCaptureCallback, false);
+    for (var i = 0, j = scribeInstance.teardownFns.length; i < j; i++) {
+      scribeInstance.teardownFns[i]();
+    }
+    for (var prop in scribeInstance) {
+      if (scribeInstance.hasOwnProperty(prop)) {
+        scribeInstance[prop] = null;
+      }
+    }
+  };
+
   Scribe.prototype = Object.create(EventEmitter.prototype);
 
   // For plugins
   // TODO: tap combinator?
   Scribe.prototype.use = function (configurePlugin) {
-    configurePlugin(this);
+    var result = configurePlugin(this);
+    if (isFunction(result)) {
+      this.teardownFns.push(result);
+    }
     return this;
   };
 
@@ -143,7 +179,10 @@ define([
     if (skipFormatters) {
       this._skipFormatters = true;
     }
-    this.el.innerHTML = html;
+    // IE11: Setting HTML to the value it already has causes breakages elsewhere (see #336)
+    if (this.el.innerHTML !== html) {
+      this.el.innerHTML = html;
+    }
   };
 
   Scribe.prototype.getHTML = function () {
@@ -160,30 +199,35 @@ define([
   };
 
   Scribe.prototype.pushHistory = function () {
-    var previousUndoItem = this.undoManager.stack[this.undoManager.position];
-    var previousContent = previousUndoItem && previousUndoItem
-      .replace(/<em class="scribe-marker">/g, '').replace(/<\/em>/g, '');
+    if (this.options.undo.enabled) {
+      var previousUndoItem = this.undoManager.stack[this.undoManager.position];
+      var previousContent = previousUndoItem && previousUndoItem
+        .replace(/<em class="scribe-marker">/g, '').replace(/<\/em>/g, '');
 
-    /**
-     * Chrome and Firefox: If we did push to the history, this would break
-     * browser magic around `Document.queryCommandState` (http://jsbin.com/eDOxacI/1/edit?js,console,output).
-     * This happens when doing any DOM manipulation.
-     */
+      /**
+       * Chrome and Firefox: If we did push to the history, this would break
+       * browser magic around `Document.queryCommandState` (http://jsbin.com/eDOxacI/1/edit?js,console,output).
+       * This happens when doing any DOM manipulation.
+       */
 
-    // We only want to push the history if the content actually changed.
-    if (! previousUndoItem || (previousUndoItem && this.getHTML() !== previousContent)) {
-      var selection = new this.api.Selection();
+      // We only want to push the history if the content actually changed.
+      if (! previousUndoItem || (previousUndoItem && this.getHTML() !== previousContent)) {
+        var selection = new this.api.Selection();
 
-      selection.placeMarkers();
-      var html = this.getHTML();
-      selection.removeMarkers();
+        selection.placeMarkers();
+        var html = this.getHTML();
+        selection.removeMarkers();
 
-      this.undoManager.push(html);
+        this.undoManager.push(html);
 
-      return true;
+        return true;
+      } else {
+        return false;
+      }
     } else {
       return false;
     }
+
   };
 
   Scribe.prototype.getCommand = function (commandName) {
@@ -246,14 +290,27 @@ define([
     return this.options.debug;
   };
 
-  Scribe.prototype.registerHTMLFormatter = function (phase, fn) {
+  /**
+   * Applies HTML formatting to all editor text.
+   * @param {String} phase sanitize/normalize/export are the standard phases
+   * @param {Function} fn Function that takes the current editor HTML and returns a formatted version.
+   */
+  Scribe.prototype.registerHTMLFormatter = function (phase, formatter) {
     this._htmlFormatterFactory.formatters[phase]
-      = this._htmlFormatterFactory.formatters[phase].push(fn);
+      = this._htmlFormatterFactory.formatters[phase].push(formatter);
   };
 
-  Scribe.prototype.registerPlainTextFormatter = function (fn) {
+  Scribe.prototype.registerPlainTextFormatter = function (formatter) {
     this._plainTextFormatterFactory.formatters
-      = this._plainTextFormatterFactory.formatters.push(fn);
+      = this._plainTextFormatterFactory.formatters.push(formatter);
+  };
+
+  Scribe.prototype.safariFeatureTest = /constructor/i.test(window.HTMLElement);
+
+  Scribe.prototype.safariGreaterThan6FeatureTest = !!window.speechSynthesis;
+
+  Scribe.prototype.format = function () {
+    this.setHTML(this._htmlFormatterFactory.format(this.getHTML()));
   };
 
   // TODO: abstract

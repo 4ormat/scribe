@@ -16,6 +16,8 @@ define([
 
   // http://www.w3.org/TR/html-markup/syntax.html#syntax-elements
   var html5VoidElements = ['AREA', 'BASE', 'BR', 'COL', 'COMMAND', 'EMBED', 'HR', 'IMG', 'INPUT', 'KEYGEN', 'LINK', 'META', 'PARAM', 'SOURCE', 'TRACK', 'WBR'];
+  var html5InlineElements = ['B', 'BIG', 'I', 'SMALL', 'TT', 'ABBR', 'ACRONYM', 'CITE', 'CODE', 'DFN', 'EM', 'KBD', 'STRONG', 'SAMP', 'VAR', 'A', 'BDO', 'BR',
+    'IMG', 'MAP', 'OBJECT', 'Q', 'SCRIPT', 'SPAN', 'SUB', 'SUP', 'BUTTON', 'INPUT', 'LABEL', 'SELECT', 'TEXTAREA'];
 
   function parentHasNoTextContent(element, node) {
     if (element.isCaretPositionNode(node)) {
@@ -54,8 +56,18 @@ define([
         if (isEmpty(node) &&
           node.textContent.trim() === '' &&
           !contains(html5VoidElements, node.nodeName)) {
-          node.appendChild(document.createElement('br'));
-        } else if (node.children.length > 0) {
+            if (contains(html5InlineElements, node.nodeName)) {
+              if (node.textContent.length > 0) {
+                node.parentNode.replaceChild(document.createTextNode(' '), node);
+              } else {
+                node.parentNode.removeChild(node);
+              }
+            } else {
+              selectableEnforcerTag = document.createElement('br');
+              selectableEnforcerTag.classList.add('scribe-ensure-selectable');
+              node.appendChild(selectableEnforcerTag);
+            }
+          } else if (node.children.length > 0) {
           traverse(element, node);
         }
       }
@@ -67,7 +79,7 @@ define([
     return function (scribe) {
 
       scribe.registerHTMLFormatter('normalize', function (html) {
-        var bin = document.createElement('div');
+        var bin = scribe.options.windowContext.document.createElement('div');
         bin.innerHTML = html;
 
         traverse(scribe.element, bin);

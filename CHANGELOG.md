@@ -1,3 +1,43 @@
+# 1.2.11
+
+Added configuration for removing `scribe.undoManager`
+
+# 1.2.10
+
+Bugfixes for selections that are 'reversed' (i.e. selected from right to left) from [Deains](https://github.com/deains). Thanks
+
+# 1.2.9
+
+Clarifies the use of nodeName in the Command implementation. Thanks [Christopher Liu](https://github.com/christopherliu)
+
+# 1.2.8
+
+Event waterfall / [Event Namespacing](https://github.com/guardian/scribe/pull/337)
+
+# 1.2.7
+
+ShadowDOM fixes for Chrome from [ShaunNetherby](https://github.com/shaunnetherby), thanks
+
+# 1.2.5
+
+IE11 compatiability changes from [Deains](https://github.com/deains), thank you
+
+# 1.2.4
+
+Changes the way that root nodes are detected, the code now uses the element that the Scribe instance is bound to rather than looking for contenteditable attributes.
+
+# 1.2.3
+
+Changes the EventEmitter to store callbacks in sets to enforce uniqueness and avoid duplicate calls
+
+# 1.2.1
+
+Fixes a typo with the use of options in the default command patches that was breaking Browserify
+
+# 1.2.0
+
+Allows the default command patches to be over-ridden in the options. This will allow users to customise what gets loaded to address issues like [the behaviour of the bold patch](https://github.com/guardian/scribe/pull/250) where the default behaviour is not what is required.
+
 # 1.1.0
 
 Introduces [ImmutableJS](https://github.com/facebook/immutable-js) (which is also exposed via scribe.immutable) and starts to convert some the internal workings of Scribe to use immutable data structures.
