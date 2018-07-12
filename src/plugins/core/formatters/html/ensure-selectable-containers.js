@@ -63,7 +63,7 @@ define([
                 node.parentNode.removeChild(node);
               }
             } else {
-              selectableEnforcerTag = document.createElement('br');
+              var selectableEnforcerTag = document.createElement('br');
               selectableEnforcerTag.classList.add('scribe-ensure-selectable');
               node.appendChild(selectableEnforcerTag);
             }
