@@ -186,7 +186,7 @@ define([
             var selection = new scribe.api.Selection();
             var range = selection.range;
 
-            if (range.collapsed) {
+            if (range && range.collapsed) {
               var containerLIElement = selection.getContaining(function (node) {
                 return node.nodeName === 'LI';
               });

@@ -15,7 +15,7 @@ define(function () {
          * so we create it manually. http://jsbin.com/tutufi/2/edit?js,output
          */
         // using range.collapsed vs selection.isCollapsed - https://code.google.com/p/chromium/issues/detail?id=447523
-        if (selection.range.collapsed) {
+        if (selection.range && selection.range.collapsed) {
           var aElement = scribe.options.windowContext.document.createElement('a');
           aElement.setAttribute('href', value);
           aElement.textContent = value;
