@@ -191,7 +191,7 @@ define([
 
   Scribe.prototype.getContent = function () {
     // Remove bogus BR element for Firefox — see explanation in BR mode files.
-    return this._htmlFormatterFactory.formatForExport(this.getHTML().replace(/<br>$/, ''));
+    return this._htmlFormatterFactory.formatForExport(this.getHTML().replace(/<br>$/, '').replace(/<br>/g, '<br/>'));
   };
 
   Scribe.prototype.getTextContent = function () {
