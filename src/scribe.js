@@ -115,8 +115,7 @@ define([
 
     // Formatters
     var defaultFormatters = Immutable.List.of(
-      escapeHtmlCharactersFormatter,
-      replaceNbspCharsFormatter
+      escapeHtmlCharactersFormatter
     );
 
 
