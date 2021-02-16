@@ -11,9 +11,10 @@ define(function () {
        * Disabling for now.
        */
       boldCommand.queryEnabled = function () {
+          var $contents = null;
         var selection = new scribe.api.Selection();
         var headingNode = selection.getContaining(function (node) {
-          return (/^(H[1-6])$/).test(node.nodeName);
+            return /^(h[1-6])$/.test(node.nodeName);
         });
         var containsHeadingNode = function (selection) {
           $contents = $(selection.range.cloneContents()).children()
